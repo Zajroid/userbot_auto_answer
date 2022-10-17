@@ -4,3 +4,5 @@ zajroid.session-journal
 config.ini
 auth_data.py
 test.py
+__pycache__
+voice

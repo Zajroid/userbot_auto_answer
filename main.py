@@ -3,6 +3,7 @@ import time
 import random
 import json
 import requests 
+import lxml
 
 from distutils.command.config import config
 from configparser import ConfigParser
@@ -24,6 +25,8 @@ PHONE_NUMBER = config.get('pyrogram', 'phone_number')
 
 TOKEN_VK = config.get('vk', 'token')
 OPEN_WEATHER_MAP_KEY = config.get('openweathermap', 'OPEN_WEATHER_MAP_KEY')
+
+# print(NAME, API_ID, API_HASH, PHONE_NUMBER, TOKEN_VK, OPEN_WEATHER_MAP_KEY, sep="\n")
 
 
 app = Client(name=NAME, 
@@ -50,15 +53,11 @@ idk_answer_list = ['я не знаю ответа', 'я просто цифры'
 # punctuation
 punctuation_list = ['?',',','.','...',':',';','#','$']
 punctuation_answer_list = ['???']
-
+    
 
 def parsing_vk():
     api = vk.API(access_token=str(TOKEN_VK).strip('\"'), v='5.131')
-
     posts = api.wall.get(domain="english_with_pleasure", count=1)
-
-    print(posts.items())
-
     for i in posts['items']:
         return str(i['text'])
 
@@ -66,9 +65,28 @@ def parsing_vk():
 def parsing_test():
     response = requests.get("https://duckduckgo.com/") 
     soup = BeautifulSoup(response.content, 'html.parser') 
-        
     return soup.title.string
 
+
+def parsing_english_native():
+    r = requests.get('https://www.native-english.ru/grammar')
+    soup = BeautifulSoup(r.content, 'lxml')
+
+    list_links = soup.find_all('li', attrs={"class": "list__item"})
+    test = []
+    counter = 0
+
+    for i in list_links:
+        if counter > 20:
+            break
+        else:
+            link_a = i.findNext('a', attrs={"itemprop": "item"})
+            link_articles_title = link_a.get("title")
+            link_articles = "https://www.native-english.ru" + link_a.get("href")
+            test.append(f"{link_articles_title}: {link_articles}")
+            counter += 1
+        
+    return str(test)
 
 
 @app.on_message(filters=filters.dice & filters.incoming & filters.private)
@@ -106,25 +124,30 @@ async def auto_answer(client: Client, message: Message):
         await app.send_message(message.chat.id, random.choice(idk_answer_list).capitalize())
 
 
-@app.on_message(filters=filters.private & filters.outgoing & filters.regex('[а-яА-Яa-zA-z]') & filters.command('$pars_vk'))
+@app.on_message(filters.command('pars_vk', prefixes='$'))
 async def auto_answer(client: Client, message: Message):
-    if message.text.lower() == "$pars":
-        prs_test = parsing_test()
-        await app.send_message(message.chat.id, prs_test)
+    if message.text.lower() == "$pars_vk":
+        ddd = parsing_vk()
+        await app.send_message(message.chat.id, ddd)
     else:
         await app.send_message(message.chat.id, 'не вышло(')
 
 
-@app.on_message(filters=filters.private & filters.outgoing & filters.regex('[а-яА-Яa-zA-z]') & filters.command('$pars') )
+@app.on_message(filters.command('pars', prefixes='$'))
 async def auto_answer(client: Client, message: Message):
-    prs_vk = parsing_vk()
-    await app.send_message(message.chat.id, prs_vk)
+    ddd = parsing_test()
+    await app.send_message(message.chat.id, ddd)
+    
+    
+@app.on_message(filters.command('preng', prefixes='$'))
+async def auto_answer(client: Client, message: Message):
+    ddd = parsing_english_native()
+    await app.send_message(message.chat.id, ddd, disable_web_page_preview=True)
 
 
-@app.on_message(filters=filters.private & filters.incoming)
-async def auto_answer(client: Client, message: Message):    
-    if message.text.lower() == "123":
-        await app.send_message(message.chat.id, "321")
+@app.on_message(filters=filters.command('vc1', prefixes='$'))
+async def vc1(client: Client, message: Message):
+    await app.send_voice(message.chat.id, "audio_2022-10-17_11-54-05.ogg")
 
 
 if __name__=='__main__':
