@@ -2,3 +2,5 @@ venv
 zajroid.session
 zajroid.session-journal
 config.ini
+auth_data.py
+test.py

@@ -1,6 +1,9 @@
-from string import punctuation
+import vk
 import time
 import random
+import json
+import requests 
+
 
 from distutils.command.config import config
 from configparser import ConfigParser
@@ -9,8 +12,45 @@ from pyrogram.types import Message
 from asyncio import sleep
 
 
+from bs4 import BeautifulSoup 
+
+
+from auth_data import token
+from vk.exceptions import VkAPIError
+
+
+
+
+
+
 config = ConfigParser()
 config.read('./systemd/config.ini')
+
+
+OPEN_WEATHER_MAP_KEY = 'c7a4efa957dc6ce374e501178e5ee198'
+
+
+def parsing_vk():
+    api = vk.API(access_token=token, v='5.131')
+
+    posts = api.wall.get(domain="english_with_pleasure", count=1)
+
+    print(posts.items())
+
+    for i in posts['items']:
+        return str(i['text'])
+
+
+
+def parsing_test():
+    response = requests.get("https://duckduckgo.com/") 
+    soup = BeautifulSoup(response.content, 'html.parser') 
+        
+    return soup.title.string
+
+
+
+# print(ddd)
 
 
 name = config.get('pyrogram', 'name')
@@ -77,8 +117,39 @@ async def auto_answer(client: Client, message: Message):
         await client.send_sticker(chat_id=mci, sticker='tgbot/stickers/cats/i_busy.webp')
         time.sleep(0.5)
         await client.send_message(mci, 'busy')
+    # elif message.text.lower() == "$pars":
+    #     ddd = parsing_test()
+    #     await app.send_message(mci, ddd)
+    # elif message.text.lower() == "$pars_vk":
+    #     await app.send_message(mci, parsing_vk())
     else:
         await app.send_message(mci, random.choice(idk_answer_list).capitalize())
+
+
+@app.on_message(filters=filters.private & filters.outgoing & filters.regex('[а-яА-Яa-zA-z]'))
+async def auto_answer(client: Client, message: Message):
+    mci = message.chat.id
+    
+    if message.text.lower() == "$pars_vk":
+        ddd = parsing_vk()
+        await app.send_message(mci, ddd)
+    else:
+        await app.send_message(mci, 'не вышло(')
+
+
+
+@app.on_message(filters=filters.private & filters.outgoing & filters.regex('[а-яА-Яa-zA-z]'))
+async def auto_answer(client: Client, message: Message):
+    mci = message.chat.id
+    
+    if message.text.lower() == "$pars":
+        ddd = parsing_test()
+        await app.send_message(mci, ddd)
+    else:
+        await app.send_message(mci, 'не вышло(')
+        
+
+
 
 
 @app.on_message(filters=filters.private & filters.incoming)
