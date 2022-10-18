@@ -12,10 +12,17 @@ from pyrogram.types import Message
 from asyncio import sleep
 from bs4 import BeautifulSoup 
 from vk.exceptions import VkAPIError
+from loguru import logger
 
 
 config = ConfigParser()
 config.read('./systemd/config.ini')
+
+logger.add('./logs/logers.log', 
+           format="{time} {level} {message}",
+           level="INFO", 
+           rotation="1 MB", 
+           compression="zip")
 
 
 NAME = config.get('pyrogram', 'name')
@@ -53,13 +60,14 @@ idk_answer_list = ['я не знаю ответа', 'я просто цифры'
 # punctuation
 punctuation_list = ['?',',','.','...',':',';','#','$']
 punctuation_answer_list = ['???']
-    
 
-def parsing_vk():
-    api = vk.API(access_token=str(TOKEN_VK).strip('\"'), v='5.131')
-    posts = api.wall.get(domain="english_with_pleasure", count=1)
-    for i in posts['items']:
-        return str(i['text'])
+
+class VK(object):
+    def parsing_vk(self):
+        api = vk.API(access_token=str(TOKEN_VK).strip('\"'), v='5.131')
+        posts = api.wall.get(domain="english_with_pleasure", count=1)
+        for i in posts['items']:
+            return str(i['text'])
 
 
 def parsing_test():
@@ -104,7 +112,7 @@ async def dice(client, message):
         await app.send_message(message.chat.id, 'Ничья')
         
 
-@app.on_message(filters=filters.private & filters.incoming & filters.regex('[а-яА-Яa-zA-z]'))
+@app.on_message(filters=filters.private & filters.incoming & filters.text)
 async def auto_answer(client: Client, message: Message):
     if message.text.lower() in greeting_dict:
         await app.send_message(message.chat.id, random.choice(greeting_answer_list).capitalize())
@@ -126,11 +134,22 @@ async def auto_answer(client: Client, message: Message):
 
 @app.on_message(filters.command('pars_vk', prefixes='$'))
 async def auto_answer(client: Client, message: Message):
-    if message.text.lower() == "$pars_vk":
-        ddd = parsing_vk()
-        await app.send_message(message.chat.id, ddd)
-    else:
-        await app.send_message(message.chat.id, 'не вышло(')
+    try:
+        vk = VK()
+        logger.info(f"Message has been send {message.chat.id}")
+        await app.send_message(message.chat.id, vk.parsing_vk())
+    except Exception as e:
+        logger.error(f"{e}")
+        await app.send_message(message.chat.id, "Не сейчас")
+        
+@app.on_message(filters=filters.voice)
+async def ddd(client: Client, message: Message):
+    try:
+        await app.download_media(message)
+        await app.send_message(message.chat.id, "voice?")
+    except Exception as e:
+        logger.error(f"{e}")
+        await app.send_message(message.chat.id, "error")
 
 
 @app.on_message(filters.command('pars', prefixes='$'))
@@ -145,7 +164,17 @@ async def auto_answer(client: Client, message: Message):
     await app.send_message(message.chat.id, ddd, disable_web_page_preview=True)
 
 
-@app.on_message(filters=filters.command('vc1', prefixes='$'))
+@app.on_message(filters=filters.command('vc1', prefixes='.'))
+async def vc1(client: Client, message: Message):
+    await app.send_voice(message.chat.id, "audio_2022-10-17_11-54-05.ogg")
+    
+
+@app.on_message(filters=filters.command('vc2', prefixes='.'))
+async def vc1(client: Client, message: Message):
+    await app.send_voice(message.chat.id, "audio_2022-10-17_11-54-05.ogg")
+    
+    
+@app.on_message(filters=filters.command('vc3', prefixes='.'))
 async def vc1(client: Client, message: Message):
     await app.send_voice(message.chat.id, "audio_2022-10-17_11-54-05.ogg")
 

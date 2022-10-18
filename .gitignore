@@ -6,3 +6,10 @@ auth_data.py
 test.py
 __pycache__
 voice
+/__pycache__
+./__pycache__
+pycache
+/.idea
+.idea
+downloads
+logs
