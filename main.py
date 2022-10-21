@@ -38,6 +38,15 @@ app = Client(name=NAME,
              phone_number=PHONE_NUMBER)
 
 
+help_msg = """
+    Hi, Im Zajroid and I simple bot
+How can I help you?
+Enter next commands:
+  1) .preng - the bot will sends a list of grammaticals links in English for you 🎓
+  2)
+"""
+
+
 # ask
 greeting_dict = ['hi', 'привет', 'даров', 'ку', 'ку-ку', 'hello', 'здравствуйте']
 fatewell_dict = ['пока', 'bye', 'поки', 'досвидания', 'бай', 'до скорого']
@@ -51,7 +60,7 @@ how_are_doing_list = ['как дела?', 'как дела', 'как ты', 'how
 how_are_doing_answer_list = ['нормально, а ты?', 'отлично, а ты?', 'пойдет', 'та как обычно, ты?']
 
 # IDK
-idk_answer_list = ['я не знаю ответа', 'я просто цифры', 'не шарю', 'и что это?', '-_-']
+idk_answer_list = [help_msg]
 
 # punctuation
 punctuation_list = ['?', ',', '.', '...', ':', ';', '#', '$']
@@ -108,6 +117,7 @@ async def dice(client, message):
         await app.send_message(message.chat.id, 'Ничья')
 
 
+
 @app.on_message(filters=filters.private & filters.incoming & filters.text)
 async def auto_answer(client: Client, message: Message):
     if message.text.lower() in greeting_dict:
@@ -125,6 +135,7 @@ async def auto_answer(client: Client, message: Message):
         time.sleep(0.5)
         await client.send_message(message.chat.id, 'busy')
     else:
+        await app.send_sticker(message.chat.id, 'tgbot/stickers/death-note-animations/l-thinking.tgs')
         await app.send_message(message.chat.id, random.choice(idk_answer_list).capitalize())
 
 
@@ -167,25 +178,9 @@ async def vc1(client: Client, message: Message):
     await app.send_voice(message.chat.id, "audio_2022-10-17_11-54-05.ogg")
 
 
-
-help_msg = """
-    Hi, Im Zajroid and I simple bot
-How can I help you?
-Enter next commands:
-  1) .preng - the bot will sends a list of grammaticals links in English for you 🎓
-  2)
-"""
-
-
 @app.on_message(filters=filters.command('help', prefixes='.'))
 async def vc1(client: Client, message: Message):
     await app.send_message(message.chat.id, help_msg)
-
-
-@app.on_message(filters=filters.private & filters.incoming)
-async def send_stick_from_death_note(client: Client, message: Message):
-    if message.chat.id == "как думаешь?":
-        await app.send_sticker('tgbot/stickers/death-note-animations/l-thinking.tgs')
 
 
 @app.on_message(filters=filters.command('spam', prefixes='.') & filters.private & filters.outgoing)
@@ -195,7 +190,7 @@ async def spam(client: Client, message: Message):
         await app.send_sticker(message.chat.id, 'tgbot/stickers/cats/i_busy.webp')
         await app.send_sticker(message.chat.id, 'tgbot/stickers/cats/saw.wepb')
         await app.send_sticker(message.chat.id, 'tgbot/stickers/cats/thats-good.wepb')
-
+        time.sleep(2)
 
 
 if __name__ == '__main__':
@@ -206,7 +201,6 @@ if __name__ == '__main__':
             pid_session = subprocess.run('fuser zajroid.session')
             subprocess.run(f'kill -9 {pid_session}')
             print('[+] DONE')
-            exit()
         except Exception as e:
             print(f'{e}')
         finally:
