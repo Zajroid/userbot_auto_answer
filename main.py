@@ -182,6 +182,13 @@ async def vc1(client: Client, message: Message):
     await app.send_message(message.chat.id, help_msg)
 
 
+@app.on_message(filters=filters.private & filters.incoming)
+async def send_stick_from_death_note(client: Client, message: Message):
+    if message.chat.id == "как думаешь?":
+        await app.send_sticker('tgbot/stickers/death-note-animations/l-thinking.tgs')
+
+
+
 if __name__ == '__main__':
     try:
         app.run()
