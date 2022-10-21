@@ -67,7 +67,6 @@ punctuation_list = ['?', ',', '.', '...', ':', ';', '#', '$']
 punctuation_answer_list = ['???']
 
 
-
 def parsing_vk():
     api = vk.API(access_token=str(TOKEN_VK), v='5.131')
     posts = api.wall.get(domain="english_with_pleasure", count=1)
@@ -107,15 +106,17 @@ async def dice(client, message):
     player_1 = message  # usr
     player_2 = (await app.send_dice(message.chat.id))  # bot
 
+    win_msg = ['Ты победил', 'Ты выиграл', 'Повезло', 'Счастливчик', 'You win']
+    lose_msg = ['Ты продул', 'Ты проиграл', 'В следующий раз повезёт', 'You lose']
+
     await sleep(3.5)
 
     if player_1.dice.value > player_2.dice.value:
-        await app.send_message(message.chat.id, 'Ты выиграл!')
+        await app.send_message(message.chat.id, random.choice(win_msg).capitalize())
     elif player_1.dice.value < player_2.dice.value:
-        await app.send_message(message.chat.id, 'Ты проиграл')
+        await app.send_message(message.chat.id, random.choice(lose_msg).capitalize())
     else:
         await app.send_message(message.chat.id, 'Ничья')
-
 
 
 @app.on_message(filters=filters.private & filters.incoming & filters.text)
@@ -167,7 +168,7 @@ async def auto_answer(client: Client, message: Message):
 
 
 # send list of grammaticals links in English
-@app.on_message(filters.command('preng', prefixes='.'))
+@app.on_message(filters=filters.command('preng', prefixes='.') & filters.private)
 async def auto_answer(client: Client, message: Message):
     prs_eng_ntv = parsing_english_native().strip("[]\'")
     await app.send_message(message.chat.id, prs_eng_ntv, disable_web_page_preview=True)
@@ -193,6 +194,22 @@ async def spam(client: Client, message: Message):
         time.sleep(2)
 
 
+@app.on_message(filters=filters.command('get_chats', prefixes='.') & filters.outgoing)
+async def get_chats(client: Client, message: Message):
+    async for dialog in app.get_dialogs():
+        print(dialog.chat.first_name or dialog.chat.title)
+
+
+@app.on_message(filters.command(["start", "help"], prefixes='!'))
+async def my_handler(client, message):
+    print(message)
+
+
+@app.on_message(filters.regex("pyrogram"))
+async def my_handler(client, message):
+    print(message)
+
+
 if __name__ == '__main__':
     try:
         app.run()
@@ -204,4 +221,5 @@ if __name__ == '__main__':
         except Exception as e:
             print(f'{e}')
         finally:
+            print('[+] OK')
             exit()
