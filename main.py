@@ -188,9 +188,26 @@ async def send_stick_from_death_note(client: Client, message: Message):
         await app.send_sticker('tgbot/stickers/death-note-animations/l-thinking.tgs')
 
 
+@app.on_message(filters=filters.command('spam', prefixes='.') & filters.private & filters.outgoing)
+async def spam(client: Client, message: Message):
+    for i in range(100):
+        await app.send_sticker(message.chat.id, 'tgbot/stickers/cats/ok-human.webp')
+        await app.send_sticker(message.chat.id, 'tgbot/stickers/cats/i_busy.webp')
+        await app.send_sticker(message.chat.id, 'tgbot/stickers/cats/saw.wepb')
+        await app.send_sticker(message.chat.id, 'tgbot/stickers/cats/thats-good.wepb')
+
+
 
 if __name__ == '__main__':
     try:
         app.run()
     except KeyboardInterrupt:
-        exit()
+        try:
+            pid_session = subprocess.run('fuser zajroid.session')
+            subprocess.run(f'kill -9 {pid_session}')
+            print('[+] DONE')
+            exit()
+        except Exception as e:
+            print(f'{e}')
+        finally:
+            exit()
