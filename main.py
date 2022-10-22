@@ -43,7 +43,9 @@ help_msg = """
 How can I help you?
 Enter next commands:
   1) .preng - the bot will sends a list of grammaticals links in English for you 🎓
-  2)
+  2) .pars_vk
+  3) .srp_encrm
+  4) .wth_drp
 """
 
 
